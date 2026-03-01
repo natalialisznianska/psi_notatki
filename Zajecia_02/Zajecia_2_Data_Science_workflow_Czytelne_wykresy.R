@@ -1,6 +1,11 @@
 #CZĘŚĆ 1- import danych ----
 
-# Prawidłowy import plików CSV z folderu - wykonaj:
+
+
+# Wczytanie dwóch plików CSV
+# read.table() – funkcja do wczytywania danych tekstowych
+# sep="," – wartości w pliku są oddzielone przecinkiem (format CSV)
+# dec="." – separatorem dziesiętnym jest kropka
 kraje_1 = read.table("kraje_makro_1.csv", header=TRUE, sep=",", dec=".")
 kraje_2 = read.table("kraje_makro_2.csv", header=TRUE, sep=",", dec=".")
 
@@ -20,26 +25,31 @@ kraje_2 = read.table("kraje_makro_2.csv", header=TRUE, sep=",", dec=".")
 library(readxl)
 
 
-# CZĘŚĆ 2 ----
-#Podgląd danych
+# CZĘŚĆ 2- Podgląd danych ----
 
-# Pierwsze/ostatnie wiersze
+# Funkcja head() wyświetla pierwsze wiersze zbioru danych.
 head(kraje_1)	# pierwsze 6 wierszy (obserwacji)
 head(kraje_2)      
 
+# head(obiekt, liczba) – pozwala określić,
+# ile pierwszych wierszy ma zostać wyświetlonych.
 head(kraje_1, 10)	# pierwsze 10 wierszy (obserwacji)
 head(kraje_2, 10)
 
+# Funkcja tail() wyświetla ostatnie wiersze zbioru danych.
 tail(kraje_1, 5)	# ostatnie 5 wierszy (obserwacji)
 tail(kraje_2, 5)
 
 
-#CzĘŚĆ 3 ----
-# Podstawowe statystyki wszystkich kolumn (zmiennych)
+#CZĘŚĆ 3- Podstawowe statystyki wszystkich kolumn (zmiennych) ----
+
+# Funkcja summary() wyświetla podstawowe statystyki opisowe dla każdej kolumny w ramce danych:
 summary(kraje_1)	# min, max, średnia, mediana, kwantyle
 summary(kraje_2)
 
 # Statystyki pojedynczej kolumny (zmiennej)
+# Odwołanie do konkretnej zmiennej następuje przez operator $
+# Tutaj analizujemy kolumnę "Przyrost_populacji"
 mean(kraje_1$Przyrost_populacji)		# średnia
 median(kraje_1$Przyrost_populacji)	# mediana
 min(kraje_1$Przyrost_populacji)		# minimum
@@ -56,7 +66,7 @@ kraje_2$X = NULL
 colnames(kraje_2) = c("Kod_kraju", "Nazwa", "Region", "Urbanizacja_proc.", "Internet_proc.")
 
 
-# Porządkowanie typów danych 
+#CZĘŚĆ 4- Porządkowanie typów danych ----
 
 # W ramce danych kraje_2 sprawdź typ zmiennej Region 
 is.numeric(kraje_2$Region) 	# czy zmienna jest liczbowa? Odp. Nie.
@@ -72,7 +82,7 @@ levels(kraje_2$Region)
 # Teraz widać, że jest 7 kategorii regionów, na których operuje zmienna Region.
 
 
-# Porządkowanie braków danych 
+#CZĘŚĆ 5- Porządkowanie braków danych ----
 
 # Szybka kontrola braków danych we wszystkich kolumnach:
 colSums(is.na(kraje_1))	# nie ma braków danych
@@ -92,7 +102,7 @@ kraje_2[is.na(kraje_2$Internet_proc.), ]
 # OPCJA 3 - Uzupełnić braki (np. imputacja medianą)
 
 
-# Czyszczenie danych ----
+#CZĘŚĆ 6- Czyszczenie danych ----
 # W ramce danych kraje_2, w kolumnie Region są kategorie, w których nazwie jest znak &:
 levels(kraje_2$Region)
 # [1] "East Asia & Pacific"       "Europe & Central Asia"    
@@ -112,9 +122,10 @@ kraje_2$Region <- gsub("&", "and", kraje_2$Region)
 kraje_2$Region = as.factor(kraje_2$Region)
 levels(kraje_2$Region)
 
+# CZĘŚĆ 7– Łączenie (scalanie) zbiorów danych ----
+
 # Funkcja merge() łączy dwie ramki danych/tabele po wspólnej kolumnie (kluczu) - działa analogicznie jak 
 # WYSZUKAJ.PIONOWO w Excelu
-
 # Przykładowo: merge(ramka1, ramka2, by.x="kolumna1", by.y="kolumna2")
 
 #   Łączenie (scalanie) ramek danych kraje_1 i kraje_2
@@ -129,17 +140,16 @@ kraje$Nazwa = NULL
 summary(kraje)
 str(kraje)
 
+# CZĘŚĆ 8- Tworzenie nowych zmiennych (dplyr) ----
 
-# Najczęściej używane funkcje pakietu dplyr: ----
+# Najczęściej używane funkcje pakietu dplyr:
 # mutate() - tworzenie nowych zmiennych na bazie istniejących
 # filter() – wybieranie wierszy spełniających określone warunki
 # select() – wybieranie kolumn
 # arrange() - sortowanie
 # group_by() - grupowanie
 # summarise() – obliczanie wartości zagregowanych (np. średnich, sum)
-
-
-# mutate() – tworzenie nowych zmiennych na bazie istniejących ----
+# mutate() – tworzenie nowych zmiennych na bazie istniejących 
 
 library(dplyr)
 
@@ -164,9 +174,10 @@ kraje = kraje %>%
 # Równoważny kod w base R:
 kraje$PKB_per_capita = kraje$PKB / kraje$Populacja
 
+# CZĘŚĆ 9- Filtrowanie i wybór danych----
 
-# filter() – wybieranie wierszy ----
-# select() – wybieranie kolumn ----
+# filter() – wybieranie wierszy 
+# select() – wybieranie kolumn 
 
 # Wyświetl kraje, w których % poziom urbanizacji jest większy niż 50
 kraje %>%
@@ -183,7 +194,7 @@ kraje %>%
 # Równoważny kod w base R:
 kraje[, c("Panstwo", "Region", "PKB", "Populacja_mln")]
 
-# arrange() – sortowanie ----
+# CZĘŚĆ 10- Sortowanie i agregacja danych ----
 
 # Posortuj kraje według przyrostu populacji rosnąco
 kraje %>%
@@ -239,8 +250,8 @@ kraje_reg = kraje[kraje$Region == "Sub-Saharan Africa", c("Panstwo", "PKB_per_ca
 kraje_reg[order(kraje_reg$PKB_per_capita, decreasing = TRUE), ]
 
 
-# group_by() – grupowanie ----
-# summarise() - obliczanie wartości zagregowanych (np. średnich, sum) ----
+# CZĘŚĆ 11- Grupowanie i porównanie do średniej regionu ----
+# summarise() - obliczanie wartości zagregowanych (np. średnich, sum)
 
 # Wyświetl tylko te kraje, które są bogatsze niż średnia regionu
 bogate = kraje %>%
@@ -343,21 +354,38 @@ kraje %>%
 library(ggplot2)
 
 
+# CZĘŚĆ 12– Wizualizacja danych (ggplot2) ----
+# 1. Prosty wykres punktowy: urbanizacja a PKB per capita
 
-# 1. Prosty wykres punktowy: urbanizacja a PKB per capita ----
+# Sprawdzamy zależność między poziomem urbanizacji a zamożnością kraju
+
 ggplot(kraje, aes(x = Urbanizacja_proc., y = PKB_per_capita)) +
   geom_point() +
   labs(
-    title = "Urbanizacja a PKB per capita",
-    x = "Urbanizacja (%)",
-    y = "PKB per capita")
+    title = "Urbanizacja a PKB per capita", # Tytuł wykresu
+    x = "Urbanizacja (%)",                  # Opis osi X
+    y = "PKB per capita")                   # Opis osi Y
 
 
 
-# 2. Zaawansowany wykres punktowy: urbanizacja a PKB per capita ----
+# CZĘŚĆ 13 – Zaawansowany wykres punktowy (ggplot2) ----
+# 2. Zaawansowany wykres punktowy: urbanizacja a PKB per capita
+
+# Wykres pokazuje zależność między urbanizacją a PKB per capita,
+# dodatkowo rozróżniając kraje według regionu (kolor)
+
 ggplot(kraje, aes(x = Urbanizacja_proc., y = PKB_per_capita, color = Region)) +
   geom_point(size = 3, alpha = 0.7) +
+
+  # size = 3 → większe punkty
+  # alpha = 0.7 → lekka przezroczystość (lepsza widoczność przy nakładaniu się punktów) 
+
   scale_y_log10(labels = scales::comma) +
+
+  # Oś Y w skali logarytmicznej (log10)
+  # Przydatne, gdy PKB per capita ma duże różnice między krajami
+  # scales::comma → formatowanie liczb z separatorami tysięcy
+
   labs(
     title = "Urbanizacja a PKB per capita",
     subtitle = "Czy bardziej zurbanizowane kraje są bogatsze?",
@@ -365,19 +393,31 @@ ggplot(kraje, aes(x = Urbanizacja_proc., y = PKB_per_capita, color = Region)) +
     y = "PKB per capita (USD, skala log)",
     color = "Region świata"
   ) +
-  theme_minimal() +
+  theme_minimal() + # Minimalistyczny styl wykresu
   theme(
     plot.title = element_text(face = "bold", size = 14),
     legend.position = "bottom")
 
 
 
-# 3. Zaawansowany wykres punktowy: rozmiar gospodarki a populacja ----
+# CZĘŚĆ 14– Wykres bąbelkowy (bubble chart) ----
+# 3. Zaawansowany wykres punktowy: rozmiar gospodarki a populacja
+
+# Wykres pokazuje zależność między:
+# - populacją (oś X)
+# - całkowitym PKB (oś Y)
+# - PKB per capita (wielkość punktu)
+# - regionem świata (kolor)
 
 ggplot(kraje, aes(x = Populacja_mln, y = PKB, size = PKB_per_capita, color = Region)) +
   geom_point(alpha = 0.7) +
+  # alpha = 0.7 → lekka przezroczystość, by punkty się nie „zlewały”
   scale_x_log10() +
+  # Skala logarytmiczna dla populacji
+  # Przydatne, gdy liczby różnią się o rzędy wielkości (np. Islandia vs Chiny)
   scale_y_log10() +
+  # Skala logarytmiczna dla PKB
+  # Duże gospodarki nie dominują wtedy wizualnie całego wykresu
   labs(
     title = "Skala gospodarki i demografia",
     x = "Populacja (mln, log10)",
@@ -387,10 +427,14 @@ ggplot(kraje, aes(x = Populacja_mln, y = PKB, size = PKB_per_capita, color = Reg
   theme_minimal()
 
 
-
-# 4. Prosty wykres słupkowy: liczba krajów w regionach ----
+# CZĘŚĆ 15– Wykres słupkowy (liczba krajów w regionach) ----
+# 4. Prosty wykres słupkowy: liczba krajów w regionach
+# Wykres pokazuje, ile krajów znajduje się w każdym regionie świata
 ggplot(kraje, aes(x = Region)) +
   geom_bar(fill = "steelblue", color = "white") +
+  # geom_bar() domyślnie liczy liczbę obserwacji w każdej kategorii
+  # fill → kolor wypełnienia słupków
+  # color → kolor obramowania słupków
   labs(
     title = "Liczba krajów w regionach świata",
     x = "Region",
@@ -399,17 +443,23 @@ ggplot(kraje, aes(x = Region)) +
   theme_minimal() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
+    # Obrót nazw regionów o 45 stopni (żeby się nie nachodziły)
     plot.title = element_text(hjust = 0.5))
+    # Wyśrodkowanie tytułu wykresu
 
 
-# 5. Zaawansowany wykres słupkowy poziomy: TOP 15 najbogatszych krajów ----
+# CZĘŚĆ 16– Poziomy wykres słupkowy: TOP 15 najbogatszych krajów ----
+# 5. Zaawansowany wykres słupkowy poziomy: TOP 15 najbogatszych krajów
 kraje %>%
   arrange(desc(PKB_per_capita)) %>%
+  # Sortujemy kraje malejąco według PKB per capita
   head(15) %>%
+  # Wybieramy tylko 15 najwyższych krajów
   ggplot(aes(x = reorder(Panstwo, PKB_per_capita), y = PKB_per_capita, fill = Region)) +
   geom_col() +
   coord_flip() +
   scale_y_continuous(labels = scales::comma) +
+  # formatowanie wartości osi Y z przecinkami
   labs(
     title = "TOP 15 najbogatszych krajów świata (2016)",
     subtitle = "PKB per capita w USD",
@@ -422,13 +472,17 @@ kraje %>%
     plot.title = element_text(face = "bold", size = 14),
     axis.text.y = element_text(size = 10))
 
-
-# 6. Wykres pudełkowy (boxplot): dostęp do internetu według regionów ----
+# CZĘŚĆ 17 – Wykres pudełkowy (boxplot): dostęp do internetu według regionów ----
+# 6. Wykres pudełkowy (boxplot): dostęp do internetu według regionów
 ggplot(kraje, aes(x = reorder(Region, Internet_proc., FUN = median), 
                   y = Internet_proc., fill = Region)) +
   geom_boxplot(alpha = 0.7) +
+  # Tworzy pudełka (boxplot) z lekką przezroczystością
   geom_jitter(width = 0.2, alpha = 0.3, size = 1) +
+  # Dodaje pojedyncze punkty reprezentujące poszczególne kraje
+  # width = rozrzut w poziomie, alpha = przezroczystość, size = wielkość punktów
   coord_flip() +
+  # Obraca wykres na poziomy, co ułatwia czytanie nazw regionów
   labs(
     title = "Dostęp do internetu według regionów świata",
     subtitle = "(punkty to poszczególne kraje)",
@@ -440,13 +494,22 @@ ggplot(kraje, aes(x = reorder(Region, Internet_proc., FUN = median),
   theme(
     plot.title = element_text(face = "bold", size = 14),
     legend.position = "none")
-# 7. Wykres pudełkowy (boxplot): przyrost populacji według regionów ----
+
+
+# CZĘŚĆ 18 – Wykres pudełkowy: przyrost populacji według regionów ----
+# 7. Wykres pudełkowy (boxplot): przyrost populacji według regionów
 # (mediana, rozrzut i obserwacje odstające)
 ggplot(kraje, aes(x = Region, y = Przyrost_populacji)) +
   geom_hline(yintercept = 0, linetype = "dashed") +
+  # Linia pozioma przy 0% przyrostu (referencyjna)
   geom_boxplot(outlier.alpha = 0.3) +
+  # Pudełko pokazuje mediana + kwartyle
+  # outlier.alpha = 0.3 → punkty odstające są lekko przezroczyste
   geom_jitter(width = 0.15, alpha = 0.5) +
+  # Punkty reprezentujące poszczególne kraje
+  # width → rozrzut w poziomie, alpha → przezroczystość
   coord_flip() +
+  # Obrót wykresu na poziomy dla czytelności nazw regionów
   labs(
     title = "Tempo przyrostu populacji w regionach świata",
     subtitle = "(punkty to poszczególne kraje, linia przerywana = 0%)",
@@ -458,17 +521,21 @@ ggplot(kraje, aes(x = Region, y = Przyrost_populacji)) +
     plot.title = element_text(face = "bold", size = 14))
 
 
+# CZĘŚĆ 19– Zapis danych i wykresów ----
+
 # Zapisanie ramki danych do pliku CSV
 write.csv(kraje, "kraje_analiza.csv") 
+# Tworzy plik CSV w bieżącym folderze roboczym
+# Można go później otworzyć w Excelu lub innym programie
 
 
-
-# Zapisanie ramki danych do pliku Excel wymaga pakietu writexl:
-#install.packages("writexl")
+# 2. Zapisanie ramki danych do pliku Excel
+# Wymaga pakietu writexl
+# install.packages("writexl")  # odkomentuj, jeśli pakiet nie jest zainstalowany
 library(writexl)
 
 write_xlsx(kraje, "kraje_wynik.xlsx")
-
+# Tworzy plik Excel (.xlsx) z pełną ramką danych
 
 
 
